@@ -250,23 +250,126 @@
     }
 
     /* ============ 2. UPLOAD TO PYTHON SERVER ============ */
-    const SERVER_URL = 'https://trycloudflare.com';
-    
-    async function uploadToPaste(content) {
-      await addLog('[ .. ] sending to local receiver...', 'warn');
-      
-      const r = await fetch(SERVER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content })
-      });
-    
-      if (!r.ok) {
-        throw new Error('HTTP ' + r.status);
+    /*  Адрес приёмника (server.py):
+          ''                              — тот же адрес, с которого открыта страница
+                                            (если её отдаёт сам server.py — то есть GET /)
+          'https://xxx.trycloudflare.com' — туннель cloudflared к локальному серверу
+          'http://127.0.0.1:8000'         — напрямую на этом ПК (страница открыта локально)
+
+        Адрес можно не вписывать в код, а передать один раз в ссылке:
+          .../index.html?server=https://xxx.trycloudflare.com
+        Он запомнится в localStorage этого браузера.  */
+    const SERVER_URL = (function () {
+      const KEY = 'reddev_server';
+      try {
+        const fromQuery = new URLSearchParams(location.search).get('server') ||
+                          (location.hash.match(/server=([^&]+)/) || [])[1];
+        if (fromQuery) {
+          const value = decodeURIComponent(fromQuery);
+          localStorage.setItem(KEY, value);
+          return value;
+        }
+        return localStorage.getItem(KEY) || '';
+      } catch (e) {
+        return '';
       }
-    
-      const data = await r.json();
-      return { service: 'reddev-receiver', url: data.file };
+    })();
+
+    /*  Токен, если server.py запущен с --token SECRET  */
+    const TOKEN = '';
+
+    /*  Публичный relay ntfy.sh — нужен, когда страницу открывает кто-то другой
+        (его браузер не может достучаться до вашего 127.0.0.1). Задаётся так:
+          .../index.html?ntfy=reddev-xxxxxxxxxxxx
+        или вписывается здесь. Приёмник на ПК забирает сообщения сам.  */
+    const NTFY_TOPIC = (function () {
+      const KEY = 'reddev_ntfy';
+      try {
+        const fromQuery = new URLSearchParams(location.search).get('ntfy') ||
+                          (location.hash.match(/ntfy=([^&]+)/) || [])[1];
+        if (fromQuery) {
+          const value = decodeURIComponent(fromQuery);
+          localStorage.setItem(KEY, value);
+          return value;
+        }
+        return localStorage.getItem(KEY) || '';
+      } catch (e) {
+        return '';
+      }
+    })();
+    const NTFY_SERVER = 'https://ntfy.sh';
+
+    /*  Куда пробовать, если основной адрес не отвечает.
+        Полезно, если страница открыта с GitHub Pages, а туннель отвалился:
+        браузер на этом же ПК достучится до сервера по localhost.  */
+    const FALLBACK_URLS = ['http://127.0.0.1:8000'];
+
+    /*  Переходить на news.ycombinator.com после успешной отправки (как в оригинале)  */
+    const REDIRECT_TO_HN = true;
+
+    function buildEndpoints() {
+      const list = [SERVER_URL || location.origin, ...FALLBACK_URLS];
+      return [...new Set(list.map(u => String(u).replace(/\/+$/, '') + '/upload'))];
+    }
+
+    async function uploadToRelay(content) {
+      const url = NTFY_SERVER.replace(/\/+$/, '') + '/' + encodeURIComponent(NTFY_TOPIC);
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Title': 'reddev',
+          'Tags': 'computer'
+        },
+        body: content
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json().catch(() => ({}));
+      return { service: 'ntfy-relay', url: url + '/' + (data.id || '') };
+    }
+
+    async function uploadToPaste(content) {
+      let lastError = new Error('no endpoint configured');
+
+      if (NTFY_TOPIC) {
+        await addLog('[ .. ] sending via public relay...', 'warn');
+        try {
+          const res = await uploadToRelay(content);
+          await addLog(`[ OK ] relay: ntfy.sh/${NTFY_TOPIC}`, 'ok');
+          return res;
+        } catch (err) {
+          lastError = err;
+          await addLog(`[ .. ] relay failed: ${err.message}`, 'warn');
+        }
+      }
+
+      await addLog('[ .. ] sending to local receiver...', 'warn');
+
+      for (const endpoint of buildEndpoints()) {
+        try {
+          const r = await fetch(endpoint, {
+            method: 'POST',
+            headers: Object.assign(
+              { 'Content-Type': 'application/json' },
+              TOKEN ? { 'X-Reddev-Token': TOKEN } : {}
+            ),
+            body: JSON.stringify({ content: content })
+          });
+
+          if (!r.ok) {
+            throw new Error('HTTP ' + r.status);
+          }
+
+          const data = await r.json();
+          await addLog(`[ OK ] receiver: ${endpoint}`, 'ok');
+          return { service: 'reddev-receiver', url: data.file || endpoint };
+        } catch (err) {
+          lastError = err;
+          await addLog(`[ .. ] ${endpoint} -> ${err.message}`, 'warn');
+        }
+      }
+
+      throw lastError;
     }
 
 
@@ -342,6 +445,11 @@
 
             if (hn.ok) {
                 await addLog('[ OK ] hacker news reachable — redirecting', 'ok');
+                if (!REDIRECT_TO_HN) {
+                    setConsole('готово — данные отправлены на приёмник');
+                    setStatus('done');
+                    return;
+                }
                 setConsole('redirecting to news.ycombinator.com...');
                 setStatus('redirecting...');
                 await sleep(700);
