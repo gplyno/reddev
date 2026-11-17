@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,8 @@
         --line: rgba(255, 255, 255, .45);
         --glass: rgba(0, 0, 0, .22);
     }
-
     * { box-sizing: border-box; }
-
     html, body { min-height: 100%; }
-
     body {
         background-color: var(--bg);
         color: var(--fg);
@@ -28,25 +25,15 @@
         position: relative;
         -webkit-font-smoothing: antialiased;
     }
-
     ::selection { background: #fff; color: var(--bg); }
 
-    /* ---------- ВИНЬЕТКА ---------- */
     .vignette {
-        position: fixed;
-        inset: 0;
-        z-index: 1;
-        pointer-events: none;
+        position: fixed; inset: 0; z-index: 1; pointer-events: none;
         background: radial-gradient(ellipse at center,
-                    rgba(0,0,0,0) 42%,
-                    rgba(0,0,0,.38) 100%);
+                    rgba(0,0,0,0) 42%, rgba(0,0,0,.38) 100%);
     }
-
-    /* ---------- СКАНЛАЙНЫ ---------- */
     body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
+        content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 10;
         background: repeating-linear-gradient(
             to bottom,
             rgba(0,0,0,0.08) 0px,
@@ -54,334 +41,369 @@
             transparent 1px,
             transparent 3px
         );
-        pointer-events: none;
-        z-index: 10;
         animation: crtFlicker 6s infinite steps(1);
     }
-
     @keyframes crtFlicker {
         0%, 96%, 100% { opacity: 1; }
         97%           { opacity: .82; }
         98%           { opacity: .96; }
     }
 
-    /* ---------- КОНТЕНТ ---------- */
-    .wrap {
-        position: relative;
-        z-index: 2;
-        width: 100%;
-        max-width: 1000px;
-        margin: 0 auto;
-    }
+    .wrap { position: relative; z-index: 2; width: 100%; max-width: 1000px; margin: 0 auto; }
 
-    /* строка приглашения */
     .prompt-line {
         font-size: clamp(.68em, 1.7vw, .85em);
-        letter-spacing: .14em;
-        text-transform: uppercase;
-        opacity: .85;
+        letter-spacing: .14em; text-transform: uppercase; opacity: .85;
         margin: 0 0 clamp(10px, 3vw, 18px);
         text-shadow: 0 0 12px rgba(255,255,255,.5);
-        animation: fadeUp .6s ease both;
     }
-
     .prompt-line .user { opacity: 1; }
     .prompt-line .sep  { opacity: .6; }
     .prompt-line .cmd  { border-bottom: 1px solid var(--line); padding-bottom: 1px; }
 
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(6px); }
-        to   { opacity: .85; transform: translateY(0); }
-    }
-
-    /* ---------- ЗАГОЛОВОК (без мигающего _) ---------- */
     h1 {
         font-size: clamp(2.2em, 10vw, 4.5em);
         letter-spacing: clamp(0.05em, 1vw, 0.15em);
         text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,0.6);
-        margin: 0 0 0.3em 0;
-        line-height: 1.1;
-        word-break: break-word;
+        margin: 0 0 0.3em 0; line-height: 1.1; word-break: break-word;
         position: relative;
         animation: glitch 7s infinite steps(1);
     }
-
     h1::before { content: "> "; opacity: 0.7; }
-
     @keyframes glitch {
-        0%, 90%, 100% {
-            transform: translate(0, 0);
-            text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,.6);
-        }
-        91% {
-            transform: translate(-3px, 1px) skewX(-3deg);
-            text-shadow: 4px 0 0 rgba(0,0,0,.55), -4px 0 0 #fff, 0 0 22px rgba(255,255,255,.9);
-        }
-        92% {
-            transform: translate(3px, -1px) skewX(3deg);
-            text-shadow: -4px 0 0 rgba(0,0,0,.55), 4px 0 0 #fff, 0 0 22px rgba(255,255,255,.9);
-        }
-        93% {
-            transform: translate(-1px, 0);
-            text-shadow: 2px 0 0 rgba(0,0,0,.5), -2px 0 0 #fff, 0 0 18px rgba(255,255,255,.7);
-        }
-        94% {
-            transform: translate(0, 0);
-            text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,.6);
-        }
+        0%, 90%, 100% { transform: translate(0, 0); text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,.6); }
+        91% { transform: translate(-3px, 1px) skewX(-3deg); text-shadow: 4px 0 0 rgba(0,0,0,.55), -4px 0 0 #fff, 0 0 22px rgba(255,255,255,.9); }
+        92% { transform: translate(3px, -1px) skewX(3deg);  text-shadow: -4px 0 0 rgba(0,0,0,.55), 4px 0 0 #fff, 0 0 22px rgba(255,255,255,.9); }
+        93% { transform: translate(-1px, 0);              text-shadow: 2px 0 0 rgba(0,0,0,.5), -2px 0 0 #fff, 0 0 18px rgba(255,255,255,.7); }
+        94% { transform: translate(0, 0);                 text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,.6); }
     }
 
-    /* ---------- ТЕРМИНАЛ ---------- */
     .terminal {
         margin-top: clamp(16px, 4vw, 30px);
         border: 1px solid var(--line);
         background: var(--glass);
-        box-shadow:
-            0 0 0 1px rgba(0,0,0,.25),
-            0 0 30px rgba(255,255,255,.10) inset,
-            0 0 24px rgba(0,0,0,.25);
-        animation: fadeUp .8s .15s ease both;
+        box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 0 30px rgba(255,255,255,.10) inset, 0 0 24px rgba(0,0,0,.25);
         overflow: hidden;
     }
-
     .terminal__bar {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        padding: 8px 12px;
-        border-bottom: 1px solid var(--line);
+        display: flex; align-items: center; gap: 7px;
+        padding: 8px 12px; border-bottom: 1px solid var(--line);
         background: rgba(0,0,0,.28);
     }
-
-    .dot {
-        width: 7px; height: 7px;
-        border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 0 8px rgba(255,255,255,.8);
-    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.8); }
     .dot:nth-child(1) { opacity: .95; }
     .dot:nth-child(2) { opacity: .6; }
     .dot:nth-child(3) { opacity: .3; }
 
-    .terminal__body {
-        padding: clamp(12px, 3.5vw, 22px);
-        min-height: clamp(180px, 30vw, 280px);
-    }
+    .terminal__body { padding: clamp(12px, 3.5vw, 22px); min-height: clamp(180px, 30vw, 280px); }
 
-    /* ---------- ПОДЗАГОЛОВОК ---------- */
     .subtitle {
         font-size: clamp(0.95em, 2.5vw, 1.25em);
-        letter-spacing: 0.05em;
-        opacity: 0.95;
-        border-left: 3px solid #fff;
-        padding-left: clamp(8px, 2vw, 14px);
-        margin: 0;
-        max-width: 70ch;
-        min-height: 1.4em;
+        letter-spacing: 0.05em; opacity: 0.95;
+        border-left: 3px solid #fff; padding-left: clamp(8px, 2vw, 14px);
+        margin: 0; max-width: 70ch; min-height: 1.4em;
         white-space: pre-wrap;
         text-shadow: 0 0 12px rgba(255,255,255,.35);
         word-break: break-word;
     }
-
     .caret {
-        display: inline-block;
-        width: .58em;
-        height: 1.02em;
-        margin-left: .12em;
-        vertical-align: -.14em;
-        background: #fff;
-        box-shadow: 0 0 10px #fff;
+        display: inline-block; width: .58em; height: 1.02em;
+        margin-left: .12em; vertical-align: -.14em;
+        background: #fff; box-shadow: 0 0 10px #fff;
         animation: blink 1s steps(1) infinite;
     }
-
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* ---------- ЛОГ (появление через transition) ---------- */
     .log {
-        list-style: none;
-        margin: clamp(14px, 3.5vw, 24px) 0 0;
-        padding: 0;
+        list-style: none; margin: clamp(14px, 3.5vw, 24px) 0 0; padding: 0;
         font-size: clamp(.66em, 1.6vw, .82em);
-        letter-spacing: .09em;
-        line-height: 1.9;
-        opacity: .85;
+        letter-spacing: .09em; line-height: 1.9; opacity: .85;
     }
-
     .log li {
-        opacity: 0;
-        transform: translateX(-8px);
+        opacity: 0; transform: translateX(-8px);
         transition: opacity .4s ease, transform .4s ease;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .log li.show  { opacity: .85; transform: translateX(0); }
+    .log li.error { text-shadow: 0 0 12px rgba(255,255,255,.85); color: #ffcccc; }
+    .log li.warn  { color: #ffeeaa; }
+    .log li.ok    { color: #ccffcc; }
 
-    .log li.show {
-        opacity: .85;
-        transform: translateX(0);
-    }
-
-    .log li.error {
-        text-shadow: 0 0 12px rgba(255,255,255,.85);
-    }
-
-    /* ---------- СТАТУС-БАР (пустой, только панель) ---------- */
     .statusbar {
-        position: fixed;
-        left: 0; right: 0; bottom: 0;
-        z-index: 3;
-        display: flex;
-        flex-wrap: wrap;
-        gap: clamp(8px, 3vw, 26px);
-        justify-content: space-between;
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 3;
+        display: flex; flex-wrap: wrap; gap: clamp(8px, 3vw, 26px);
+        justify-content: space-between; align-items: center;
         padding: 7px clamp(12px, 4vw, 24px);
-        min-height: 26px;
-        border-top: 1px solid var(--line);
-        background: rgba(0,0,0,.3);
-        backdrop-filter: blur(2px);
+        min-height: 26px; border-top: 1px solid var(--line);
+        background: rgba(0,0,0,.3); backdrop-filter: blur(2px);
+        font-size: clamp(.62em, 1.5vw, .75em);
+        letter-spacing: .12em; text-transform: uppercase; opacity: .8;
     }
 </style>
 </head>
 <body>
 
-    <div class="vignette" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
 
-    <main class="wrap">
+<main class="wrap">
+    <div class="prompt-line">
+        <span class="user">root@reddev</span><span class="sep">:</span><span class="sep">~</span><span class="sep">$</span>
+        <span class="cmd">whoami</span>
+    </div>
 
-        <div class="prompt-line">
-            <span class="user">root@reddev</span><span class="sep">:</span><span class="sep">~</span><span class="sep">$</span>
-            <span class="cmd">whoami</span>
+    <h1>reddev</h1>
+
+    <section class="terminal">
+        <div class="terminal__bar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
         </div>
+        <div class="terminal__body">
+            <p class="subtitle">system info collector</p>
+        </div>
+    </section>
 
-        <h1>reddev</h1>
+    <ul class="log" id="log"></ul>
+</main>
 
-        <section class="terminal">
-            <div class="terminal__bar">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
-            <div class="terminal__body">
-                <!-- ============================================= -->
-                <!-- ФИНАЛЬНЫЙ ТЕКСТ КОНСОЛИ — замени "404" на свой -->
-                <!-- ============================================= -->
-                <p class="subtitle">404</p>
-            </div>
-        </section>
-
-        <ul class="log" id="log"></ul>
-
-    </main>
-
-    <div class="statusbar" aria-hidden="true"></div>
+<div class="statusbar" aria-hidden="true">
+    <span id="status">booting...</span>
+    <span>reddev &mdash; no fake logs</span>
+</div>
 
 <script>
 (function () {
     "use strict";
 
-    var subtitle = document.querySelector(".subtitle");
-    var logEl    = document.getElementById("log");
+    /* ----------------------------------------------------------------
+       No GitHub token used. Flow:
+         1. Collect real browser/screen/network info
+         2. Upload as .txt to anonymous paste services (public URLs)
+         3. If all pastes fail -> download file locally instead
+         4. Check https://news.ycombinator.com/ with 8s timeout
+         5. Redirect on success, or log the exact failure reason
+       (GitHub API itself always requires auth for writes — that is
+       why anonymous pastes are used here. To actually push into
+       gplyno/reddev without exposing a token, add a tiny proxy.)
+       ---------------------------------------------------------------- */
 
-    /* Финальный текст берём из HTML — можно менять в <p class="subtitle"> */
-    var FINAL_TEXT = (subtitle.textContent || "").trim() || "404";
+    const TARGET_REPO = 'gplyno/reddev';
 
-    /* Строки лога. Последняя — ошибка 404. */
-    var LOG_LINES = [
-        { text: "[ ok ] kernel 5.4.0-reddev :: boot sequence", error: false },
-        { text: "[ ok ] mount /dev/reddev",                     error: false },
-        { text: "[ .. ] handshake 127.0.0.1:1337",              error: false },
-        { text: "[ !! ] intrusion countermeasure : disabled",   error: false },
-        { text: "[ ok ] payload injected : 0xdeadbeef",         error: false },
-        { text: "[ ERR ] 404 — resource not found",             error: true  }
-    ];
+    const subtitle = document.querySelector(".subtitle");
+    const logEl    = document.getElementById("log");
+    const statusEl = document.getElementById("status");
 
-    /* ===== ТАЙМИНГИ (можно крутить) ===== */
-    var T = {
-        emptyConsole:  500,   // пустая консоль + каретка
-        typeSpeed:      60,   // мс на символ при наборе
-        afterInitText:  400,  // пауза после "initializing..."
-        logLineGap:    550,   // пауза между строками лога
-        afterLog5:      300,  // пауза перед "requesting..."
-        requestHold:  2300,   // ДОЛГАЯ пауза перед ошибкой 404
-        afterError:     500,  // пауза между ERR 404 и финальным 404
-        finalTypeSpeed: 90    // мс на символ для финального текста
-    };
-
-    /* ===== утилиты ===== */
-    function sleep(ms) {
-        return new Promise(function (r) { setTimeout(r, ms); });
-    }
-
-    var caret = document.createElement("span");
+    const caret = document.createElement("span");
     caret.className = "caret";
     caret.setAttribute("aria-hidden", "true");
 
-    /* Печать текста посимвольно; каретка остаётся в конце */
-    function typeText(text, speed) {
-        return new Promise(function (resolve) {
-            var tn = document.createTextNode("");
-            subtitle.textContent = "";
-            subtitle.appendChild(tn);
-            subtitle.appendChild(caret);
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const setStatus = t => { statusEl.textContent = t; };
 
-            var i = 0;
-            (function step() {
-                if (i >= text.length) { resolve(); return; }
-                tn.data += text.charAt(i++);
-                setTimeout(step, speed + Math.random() * 20);
-            })();
-        });
+    function setConsole(text) {
+        subtitle.textContent = text;
+        subtitle.appendChild(caret);
     }
 
-    /* Добавить строку лога с плавным появлением через transition */
-    function addLogLine(line) {
-        return new Promise(function (resolve) {
-            var li = document.createElement("li");
-            li.textContent = line.text;
-            if (line.error) li.classList.add("error");
+    function addLog(text, type = '') {
+        return new Promise(resolve => {
+            const li = document.createElement("li");
+            li.textContent = text;
+            if (type) li.classList.add(type);
             logEl.appendChild(li);
-
-            /* принудительный reflow — чтобы transition гарантированно сработал */
             void li.offsetWidth;
             li.classList.add("show");
-
-            setTimeout(resolve, T.logLineGap);
+            setTimeout(resolve, 160);
         });
     }
 
-    /* ===== СЦЕНАРИЙ ===== */
-    (async function run() {
-        /* 1. Пустая консоль + мигающая каретка */
-        subtitle.textContent = "";
-        subtitle.appendChild(caret);
-        await sleep(T.emptyConsole);
-
-        /* 2. Что-то выполняется — печатается в консоли */
-        await typeText("initializing boot sequence...", T.typeSpeed);
-        await sleep(T.afterInitText);
-
-        /* 3. Лог появляется построчно (первые 5 строк) */
-        for (var i = 0; i < LOG_LINES.length - 1; i++) {
-            await addLogLine(LOG_LINES[i]);
+    /* ============ 1. COLLECT ============ */
+    function collectBrowserInfo() {
+        const nav = navigator;
+        const scr = screen;
+        const info = {
+            'user-agent'          : nav.userAgent,
+            'language'            : nav.language,
+            'languages'           : (nav.languages || []).join(', ') || 'n/a',
+            'platform'            : nav.platform || 'n/a',
+            'cookies enabled'     : nav.cookieEnabled ? 'yes' : 'no',
+            'online'              : nav.onLine ? 'yes' : 'no',
+            'screen'              : `${scr.width}x${scr.height}`,
+            'available area'      : `${scr.availWidth}x${scr.availHeight}`,
+            'color depth (bit)'   : scr.colorDepth,
+            'device pixel ratio'  : window.devicePixelRatio || 1,
+            'timezone'            : Intl.DateTimeFormat().resolvedOptions().timeZone || 'n/a',
+            'utc offset (min)'    : new Date().getTimezoneOffset(),
+            'viewport'            : `${window.innerWidth}x${window.innerHeight}`,
+            'load time (ms)'      : performance.now().toFixed(0),
+            'url'                 : location.href,
+            'referrer'            : document.referrer || '(none)',
+            'do not track'        : nav.doNotTrack || '(unset)'
+        };
+        if (nav.connection) {
+            info['connection type']  = nav.connection.effectiveType || 'n/a';
+            info['downlink (mbit/s)'] = nav.connection.downlink     || 'n/a';
+            info['rtt (ms)']          = nav.connection.rtt          || 'n/a';
         }
+        if (nav.hardwareConcurrency) info['logical cpus']   = nav.hardwareConcurrency;
+        if (nav.deviceMemory)        info['device ram (gb)'] = nav.deviceMemory;
+        return info;
+    }
 
-        /* 4. Консоль переключается на "requesting resource..." */
-        subtitle.textContent = "";
-        subtitle.appendChild(caret);
-        await sleep(T.afterLog5);
-        await typeText("requesting resource...", T.typeSpeed);
+    /* ============ 2. ANONYMOUS UPLOAD ============ */
+    async function uploadToPaste(content) {
+        const services = [
+            {
+                name: 'paste.rs',
+                run: async () => {
+                    const r = await fetch('https://paste.rs/', { method: 'POST', body: content });
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const t = (await r.text()).trim();
+                    if (!/^https?:\/\//.test(t)) throw new Error('bad response: ' + t.slice(0, 60));
+                    return t;
+                }
+            },
+            {
+                name: 'dpaste.com',
+                run: async () => {
+                    const r = await fetch('https://dpaste.com/api/v2/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            content: content, syntax: 'text', expiry_days: '7'
+                        }).toString()
+                    });
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const t = (await r.text()).trim();
+                    if (!/^https?:\/\//.test(t)) throw new Error('bad response: ' + t.slice(0, 60));
+                    return t;
+                }
+            },
+            {
+                name: '0x0.st',
+                run: async () => {
+                    const fd = new FormData();
+                    fd.append('file', new Blob([content], { type: 'text/plain' }), 'reddev-info.txt');
+                    const r = await fetch('https://0x0.st/', { method: 'POST', body: fd });
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const t = (await r.text()).trim();
+                    if (!/^https?:\/\//.test(t)) throw new Error('bad response: ' + t.slice(0, 60));
+                    return t;
+                }
+            }
+        ];
 
-        /* 5. ДОЛГАЯ ПАУЗА — запрос "висит" */
-        await sleep(T.requestHold);
+        const failures = [];
+        for (const svc of services) {
+            try {
+                await addLog(`[ .. ] posting to ${svc.name} ...`, 'warn');
+                const url = await svc.run();
+                return { service: svc.name, url };
+            } catch (e) {
+                failures.push(`${svc.name}: ${e.message}`);
+                await addLog(`[ ERR ] ${svc.name} failed: ${e.message}`, 'error');
+            }
+        }
+        throw new Error('all paste services failed -> ' + failures.join(' | '));
+    }
 
-        /* 6. Появляется финальная строка лога — ошибка 404 */
-        await addLogLine(LOG_LINES[LOG_LINES.length - 1]);
-        await sleep(T.afterError);
+    function downloadLocally(content) {
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url;
+        a.download = 'reddev-info.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
 
-        /* 7. Финальный текст консоли — 404 */
-        subtitle.textContent = "";
-        subtitle.appendChild(caret);
-        await typeText(FINAL_TEXT, T.finalTypeSpeed);
+    /* ============ 3. HACKER NEWS CHECK ============ */
+    async function checkHackerNews() {
+        const url = 'https://news.ycombinator.com/';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        try {
+            const resp = await fetch(url, {
+                method: 'GET',
+                mode: 'cors',
+                signal: controller.signal,
+                headers: { 'Accept': 'text/html' }
+            });
+            clearTimeout(timeoutId);
+            if (!resp.ok) return { ok: false, reason: `HTTP ${resp.status} ${resp.statusText}` };
+            return { ok: true, url };
+        } catch (err) {
+            clearTimeout(timeoutId);
+            if (err.name === 'AbortError') {
+                return { ok: false, reason: 'timeout (8s) — server did not respond' };
+            }
+            if (err instanceof TypeError) {
+                return { ok: false, reason: 'network error or CORS block — site unreachable or refuses browser requests' };
+            }
+            return { ok: false, reason: err.message || 'unknown error' };
+        }
+    }
+
+    /* ============ MAIN ============ */
+    (async function run() {
+        try {
+            setStatus('collecting info...');
+            setConsole('collecting system info...');
+            await sleep(400);
+
+            const info = collectBrowserInfo();
+
+            await addLog('=== system info ===');
+            for (const [k, v] of Object.entries(info)) {
+                await addLog(`[ OK ] ${k}: ${v}`, 'ok');
+            }
+
+            const txt =
+                'reddev — system info dump\n' +
+                'generated: '   + new Date().toISOString() + '\n' +
+                'source: '      + location.href + '\n' +
+                'target repo: ' + TARGET_REPO + ' (via anonymous paste, no token)\n' +
+                '\n--- collected data ---\n' +
+                Object.entries(info).map(([k, v]) => `${k}: ${v}`).join('\n') +
+                '\n--- end ---\n';
+
+            setStatus('uploading...');
+            setConsole('uploading data...');
+
+            try {
+                const res = await uploadToPaste(txt);
+                await addLog(`[ OK ] uploaded to ${res.service}`, 'ok');
+                await addLog(`[ OK ] url: ${res.url}`, 'ok');
+            } catch (e) {
+                await addLog(`[ ERR ] ${e.message}`, 'error');
+                await addLog('[ .. ] falling back to local download', 'warn');
+                downloadLocally(txt);
+                await addLog('[ OK ] saved as reddev-info.txt', 'ok');
+            }
+
+            setStatus('checking hn...');
+            setConsole('checking https://news.ycombinator.com/ ...');
+            await addLog('[ .. ] checking https://news.ycombinator.com/ ...', 'warn');
+
+            const hn = await checkHackerNews();
+
+            if (hn.ok) {
+                await addLog('[ OK ] hacker news reachable — redirecting', 'ok');
+                setConsole('redirecting to news.ycombinator.com...');
+                setStatus('redirecting...');
+                await sleep(700);
+                window.location.href = hn.url;
+            } else {
+                await addLog(`[ ERR ] hacker news unreachable: ${hn.reason}`, 'error');
+                setConsole('ERROR: ' + hn.reason);
+                setStatus('hn check failed');
+            }
+        } catch (fatal) {
+            await addLog(`[ FATAL ] ${fatal.message}`, 'error');
+            setConsole('fatal error — see log');
+            setStatus('fatal');
+        }
     })();
 })();
 </script>
