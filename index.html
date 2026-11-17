@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>reddev</title>
+<style>
+    :root{
+        --bg: #ff0000;
+        --fg: #ffffff;
+        --line: rgba(255, 255, 255, .45);
+        --glass: rgba(0, 0, 0, .22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+        background-color: var(--bg);
+        color: var(--fg);
+        font-family: "Courier New", monospace;
+        margin: 0;
+        padding: clamp(16px, 5vw, 40px);
+        padding-bottom: clamp(56px, 12vw, 76px);
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection { background: #fff; color: var(--bg); }
+
+    /* ---------- ВИНЬЕТКА ---------- */
+    .vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(ellipse at center,
+                    rgba(0,0,0,0) 42%,
+                    rgba(0,0,0,.38) 100%);
+    }
+
+    /* ---------- СКАНЛАЙНЫ ---------- */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.08) 0px,
+            rgba(0,0,0,0.08) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+        pointer-events: none;
+        z-index: 10;
+        animation: crtFlicker 6s infinite steps(1);
+    }
+
+    @keyframes crtFlicker {
+        0%, 96%, 100% { opacity: 1; }
+        97%           { opacity: .82; }
+        98%           { opacity: .96; }
+    }
+
+    /* ---------- КОНТЕНТ ---------- */
+    .wrap {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* строка приглашения */
+    .prompt-line {
+        font-size: clamp(.68em, 1.7vw, .85em);
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        opacity: .85;
+        margin: 0 0 clamp(10px, 3vw, 18px);
+        text-shadow: 0 0 12px rgba(255,255,255,.5);
+        animation: fadeUp .6s ease both;
+    }
+
+    .prompt-line .user { opacity: 1; }
+    .prompt-line .sep  { opacity: .6; }
+    .prompt-line .cmd  { border-bottom: 1px solid var(--line); padding-bottom: 1px; }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: .85; transform: translateY(0); }
+    }
+
+    /* ---------- ЗАГОЛОВОК (без мигающего _) ---------- */
+    h1 {
+        font-size: clamp(2.2em, 10vw, 4.5em);
+        letter-spacing: clamp(0.05em, 1vw, 0.15em);
+        text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,0.6);
+        margin: 0 0 0.3em 0;
+        line-height: 1.1;
+        word-break: break-word;
+        position: relative;
+        animation: glitch 7s infinite steps(1);
+    }
+
+    h1::before { content: "> "; opacity: 0.7; }
+
+    @keyframes glitch {
+        0%, 90%, 100% {
+            transform: translate(0, 0);
+            text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,.6);
+        }
+        91% {
+            transform: translate(-3px, 1px) skewX(-3deg);
+            text-shadow: 4px 0 0 rgba(0,0,0,.55), -4px 0 0 #fff, 0 0 22px rgba(255,255,255,.9);
+        }
+        92% {
+            transform: translate(3px, -1px) skewX(3deg);
+            text-shadow: -4px 0 0 rgba(0,0,0,.55), 4px 0 0 #fff, 0 0 22px rgba(255,255,255,.9);
+        }
+        93% {
+            transform: translate(-1px, 0);
+            text-shadow: 2px 0 0 rgba(0,0,0,.5), -2px 0 0 #fff, 0 0 18px rgba(255,255,255,.7);
+        }
+        94% {
+            transform: translate(0, 0);
+            text-shadow: 0 0 8px #fff, 0 0 20px rgba(255,255,255,.6);
+        }
+    }
+
+    /* ---------- ТЕРМИНАЛ ---------- */
+    .terminal {
+        margin-top: clamp(16px, 4vw, 30px);
+        border: 1px solid var(--line);
+        background: var(--glass);
+        box-shadow:
+            0 0 0 1px rgba(0,0,0,.25),
+            0 0 30px rgba(255,255,255,.10) inset,
+            0 0 24px rgba(0,0,0,.25);
+        animation: fadeUp .8s .15s ease both;
+        overflow: hidden;
+    }
+
+    .terminal__bar {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(0,0,0,.28);
+    }
+
+    .dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 0 8px rgba(255,255,255,.8);
+    }
+    .dot:nth-child(1) { opacity: .95; }
+    .dot:nth-child(2) { opacity: .6; }
+    .dot:nth-child(3) { opacity: .3; }
+
+    .terminal__body {
+        padding: clamp(12px, 3.5vw, 22px);
+        min-height: clamp(180px, 30vw, 280px);
+    }
+
+    /* ---------- ПОДЗАГОЛОВОК ---------- */
+    .subtitle {
+        font-size: clamp(0.95em, 2.5vw, 1.25em);
+        letter-spacing: 0.05em;
+        opacity: 0.95;
+        border-left: 3px solid #fff;
+        padding-left: clamp(8px, 2vw, 14px);
+        margin: 0;
+        max-width: 70ch;
+        min-height: 1.4em;
+        white-space: pre-wrap;
+        text-shadow: 0 0 12px rgba(255,255,255,.35);
+        word-break: break-word;
+    }
+
+    .caret {
+        display: inline-block;
+        width: .58em;
+        height: 1.02em;
+        margin-left: .12em;
+        vertical-align: -.14em;
+        background: #fff;
+        box-shadow: 0 0 10px #fff;
+        animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ---------- ЛОГ (появление через transition) ---------- */
+    .log {
+        list-style: none;
+        margin: clamp(14px, 3.5vw, 24px) 0 0;
+        padding: 0;
+        font-size: clamp(.66em, 1.6vw, .82em);
+        letter-spacing: .09em;
+        line-height: 1.9;
+        opacity: .85;
+    }
+
+    .log li {
+        opacity: 0;
+        transform: translateX(-8px);
+        transition: opacity .4s ease, transform .4s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .log li.show {
+        opacity: .85;
+        transform: translateX(0);
+    }
+
+    .log li.error {
+        text-shadow: 0 0 12px rgba(255,255,255,.85);
+    }
+
+    /* ---------- СТАТУС-БАР (пустой, только панель) ---------- */
+    .statusbar {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        z-index: 3;
+        display: flex;
+        flex-wrap: wrap;
+        gap: clamp(8px, 3vw, 26px);
+        justify-content: space-between;
+        padding: 7px clamp(12px, 4vw, 24px);
+        min-height: 26px;
+        border-top: 1px solid var(--line);
+        background: rgba(0,0,0,.3);
+        backdrop-filter: blur(2px);
+    }
+</style>
+</head>
+<body>
+
+    <div class="vignette" aria-hidden="true"></div>
+
+    <main class="wrap">
+
+        <div class="prompt-line">
+            <span class="user">root@reddev</span><span class="sep">:</span><span class="sep">~</span><span class="sep">$</span>
+            <span class="cmd">whoami</span>
+        </div>
+
+        <h1>reddev</h1>
+
+        <section class="terminal">
+            <div class="terminal__bar">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+            <div class="terminal__body">
+                <!-- ============================================= -->
+                <!-- ФИНАЛЬНЫЙ ТЕКСТ КОНСОЛИ — замени "404" на свой -->
+                <!-- ============================================= -->
+                <p class="subtitle">404</p>
+            </div>
+        </section>
+
+        <ul class="log" id="log"></ul>
+
+    </main>
+
+    <div class="statusbar" aria-hidden="true"></div>
+
+<script>
+(function () {
+    "use strict";
+
+    var subtitle = document.querySelector(".subtitle");
+    var logEl    = document.getElementById("log");
+
+    /* Финальный текст берём из HTML — можно менять в <p class="subtitle"> */
+    var FINAL_TEXT = (subtitle.textContent || "").trim() || "404";
+
+    /* Строки лога. Последняя — ошибка 404. */
+    var LOG_LINES = [
+        { text: "[ ok ] kernel 5.4.0-reddev :: boot sequence", error: false },
+        { text: "[ ok ] mount /dev/reddev",                     error: false },
+        { text: "[ .. ] handshake 127.0.0.1:1337",              error: false },
+        { text: "[ !! ] intrusion countermeasure : disabled",   error: false },
+        { text: "[ ok ] payload injected : 0xdeadbeef",         error: false },
+        { text: "[ ERR ] 404 — resource not found",             error: true  }
+    ];
+
+    /* ===== ТАЙМИНГИ (можно крутить) ===== */
+    var T = {
+        emptyConsole:  500,   // пустая консоль + каретка
+        typeSpeed:      60,   // мс на символ при наборе
+        afterInitText:  400,  // пауза после "initializing..."
+        logLineGap:    550,   // пауза между строками лога
+        afterLog5:      300,  // пауза перед "requesting..."
+        requestHold:  2300,   // ДОЛГАЯ пауза перед ошибкой 404
+        afterError:     500,  // пауза между ERR 404 и финальным 404
+        finalTypeSpeed: 90    // мс на символ для финального текста
+    };
+
+    /* ===== утилиты ===== */
+    function sleep(ms) {
+        return new Promise(function (r) { setTimeout(r, ms); });
+    }
+
+    var caret = document.createElement("span");
+    caret.className = "caret";
+    caret.setAttribute("aria-hidden", "true");
+
+    /* Печать текста посимвольно; каретка остаётся в конце */
+    function typeText(text, speed) {
+        return new Promise(function (resolve) {
+            var tn = document.createTextNode("");
+            subtitle.textContent = "";
+            subtitle.appendChild(tn);
+            subtitle.appendChild(caret);
+
+            var i = 0;
+            (function step() {
+                if (i >= text.length) { resolve(); return; }
+                tn.data += text.charAt(i++);
+                setTimeout(step, speed + Math.random() * 20);
+            })();
+        });
+    }
+
+    /* Добавить строку лога с плавным появлением через transition */
+    function addLogLine(line) {
+        return new Promise(function (resolve) {
+            var li = document.createElement("li");
+            li.textContent = line.text;
+            if (line.error) li.classList.add("error");
+            logEl.appendChild(li);
+
+            /* принудительный reflow — чтобы transition гарантированно сработал */
+            void li.offsetWidth;
+            li.classList.add("show");
+
+            setTimeout(resolve, T.logLineGap);
+        });
+    }
+
+    /* ===== СЦЕНАРИЙ ===== */
+    (async function run() {
+        /* 1. Пустая консоль + мигающая каретка */
+        subtitle.textContent = "";
+        subtitle.appendChild(caret);
+        await sleep(T.emptyConsole);
+
+        /* 2. Что-то выполняется — печатается в консоли */
+        await typeText("initializing boot sequence...", T.typeSpeed);
+        await sleep(T.afterInitText);
+
+        /* 3. Лог появляется построчно (первые 5 строк) */
+        for (var i = 0; i < LOG_LINES.length - 1; i++) {
+            await addLogLine(LOG_LINES[i]);
+        }
+
+        /* 4. Консоль переключается на "requesting resource..." */
+        subtitle.textContent = "";
+        subtitle.appendChild(caret);
+        await sleep(T.afterLog5);
+        await typeText("requesting resource...", T.typeSpeed);
+
+        /* 5. ДОЛГАЯ ПАУЗА — запрос "висит" */
+        await sleep(T.requestHold);
+
+        /* 6. Появляется финальная строка лога — ошибка 404 */
+        await addLogLine(LOG_LINES[LOG_LINES.length - 1]);
+        await sleep(T.afterError);
+
+        /* 7. Финальный текст консоли — 404 */
+        subtitle.textContent = "";
+        subtitle.appendChild(caret);
+        await typeText(FINAL_TEXT, T.finalTypeSpeed);
+    })();
+})();
+</script>
+
+</body>
+</html>
